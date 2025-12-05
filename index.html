@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Космический майнер</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-rocket"></i> Космический майнер</h1>
+            <div class="stats">
+                <div class="ore-count">Руда: <span id="ore">0</span></div>
+                <div class="rate">В секунду: <span id="rate">0</span></div>
+            </div>
+        </header>
+
+        <main>
+            <section class="click-area">
+                <h2>Астероид</h2>
+                <p>Кликай, чтобы добывать руду!</p>
+                <button id="asteroid">
+                    <i class="fas fa-gem"></i>
+                </button>
+                <p id="click-power">Сила клика: <span>1</span></p>
+            </section>
+
+            <section class="upgrades">
+                <h2><i class="fas fa-cogs"></i> Улучшения</h2>
+                <div class="upgrades-list" id="upgrades-list">
+                    <!-- Улучшения будут добавляться с помощью JS -->
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Создано с ❤️ и JavaScript</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
