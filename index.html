@@ -1,251 +1,61 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Пингвин в Антарктиде</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body, html {
-      height: 100%;
-      overflow: hidden;
-      background: #0b111f;
-      font-family: system-ui, -apple-system, sans-serif;
-      cursor: default;
-    }
-
-    .scene {
-      position: relative;
-      width: 100%;
-      height: 100vh;
-      perspective: 1200px;
-    }
-
-    .bg-layer {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      will-change: transform;
-      transition: transform 0.15s ease-out;
-    }
-
-    #bg-far { 
-      background: linear-gradient(to bottom, #0a1a2f 0%, #000814 100%);
-      z-index: 1;
-    }
-    #bg-mid {
-      background-image: url('https://images.pexels.com/photos/20433668/pexels-photo-20433668/free-photo-of-view-of-an-ice-sheet-and-snowcapped-mountain-under-dark-clouds-in-antarctica.jpeg?auto=compress&cs=tinysrgb&w=1920');
-      opacity: 0.45;
-      z-index: 2;
-      transform: translateZ(-200px) scale(1.25);
-    }
-    #bg-near {
-      background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.7) 80%);
-      z-index: 4;
-      pointer-events: none;
-    }
-
-    .penguin-container {
-      position: absolute;
-      left: 12%;
-      bottom: 22%;
-      width: 140px;
-      height: 220px;
-      z-index: 10;
-      transform: translateX(-50%);
-      transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
-      will-change: transform;
-    }
-
-    .penguin {
-      width: 100%;
-      height: 100%;
-      background: url('image (69).jpg') no-repeat center;
-      background-size: contain;
-      filter: drop-shadow(0 15px 30px rgba(0,0,0,0.9)) brightness(0.95);
-      transform-origin: bottom center;
-    }
-
-    @keyframes waddle {
-      0%, 100% { transform: rotate(-4deg) translateY(0); }
-      25%      { transform: rotate(4deg)  translateY(-4px); }
-      50%      { transform: rotate(-4deg) translateY(0); }
-      75%      { transform: rotate(4deg)  translateY(-4px); }
-    }
-
-    .walking .penguin { animation: waddle 2.4s infinite ease-in-out; }
-
-    canvas#trails {
-      position: absolute;
-      inset: 0;
-      z-index: 8;
-      pointer-events: none;
-    }
-
-    .snowflake {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background: white;
-      border-radius: 50%;
-      opacity: 0.7;
-      pointer-events: none;
-      animation: fall linear infinite;
-      box-shadow: 0 0 6px rgba(255,255,255,0.8);
-    }
-
-    @keyframes fall {
-      to { transform: translateY(100vh) translateX(var(--drift)); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пингвин идёт</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB 50%, #E0F6FF 100%);
+        }
+        #scene {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        #penguin {
+            position: absolute;
+            width: 100px;
+            height: auto;
+            bottom: 20px;
+            left: 0;
+            z-index: 10;
+        }
+        .footprint {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-image: url('image (70).png'); /* ваше изображение следа */
+            background-size: contain;
+            opacity: 0.7;
+            z-index: 5;
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
+    <div class="controls">
+        <button id="startBtn">Старт (50 сек)</button>
+        <button id="resetBtn">Сбросить следы</button>
+    </div>
+    <div id="scene">
+        <img id="penguin" src="penguin.png" alt="Пингвин">
+    </div>
 
-<div class="scene" id="scene">
-  <div class="bg-layer" id="bg-far"></div>
-  <div class="bg-layer" id="bg-mid"></div>
-  <div class="bg-layer" id="bg-near"></div>
-
-  <div class="penguin-container" id="penguinContainer">
-    <div class="penguin" id="penguin"></div>
-  </div>
-
-  <canvas id="trails"></canvas>
-</div>
-
-<script>
-// ────────────────────────────────────────────────
-//  Переменные
-// ────────────────────────────────────────────────
-const container = document.getElementById('penguinContainer');
-const penguin   = document.getElementById('penguin');
-const canvas    = document.getElementById('trails');
-const ctx       = canvas.getContext('2d');
-const scene     = document.getElementById('scene');
-
-let w, h, startTime;
-const footprints = [];
-const duration = 52; // ~50+ секунд
-
-function resize() {
-  w = canvas.width = window.innerWidth;
-  h = canvas.height = window.innerHeight;
-
-  const startX = w * 0.12;
-  const endX   = w * 0.85;
-  const startY = h * 0.78;
-  const endY   = h * 0.18;
-
-  window.startX = startX; window.endX = endX;
-  window.startY = startY; window.endY = endY;
-}
-window.addEventListener('resize', resize);
-resize();
-
-// ────────────────────────────────────────────────
-//  Следы (более реалистичные)
-// ────────────────────────────────────────────────
-function drawFootprint(x, y, angle) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-
-  ctx.fillStyle = 'rgba(220,235,255,0.88)';
-  ctx.shadowColor = 'rgba(0,8,40,0.5)';
-  ctx.shadowBlur = 12;
-
-  // Пятка
-  ctx.beginPath();
-  ctx.ellipse(0, 10, 22, 14, 0, 0, Math.PI*2);
-  ctx.fill();
-
-  // Три пальца
-  ctx.strokeStyle = 'rgba(200,225,255,0.95)';
-  ctx.lineWidth = 6;
-  ctx.lineCap = 'round';
-
-  ctx.beginPath();
-  ctx.moveTo(-14, -4);
-  ctx.quadraticCurveTo(-24, -28, -12, -42);
-  ctx.moveTo(0, -6);
-  ctx.quadraticCurveTo(0, -34, 0, -48);
-  ctx.moveTo(14, -4);
-  ctx.quadraticCurveTo(24, -28, 12, -42);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-// ────────────────────────────────────────────────
-//  Анимация движения пингвина
-// ────────────────────────────────────────────────
-function animatePenguin(time) {
-  if (!startTime) startTime = time;
-  const elapsed = (time - startTime) / 1000;
-  const progress = Math.min(elapsed / duration, 1);
-
-  const x = window.startX + (window.endX - window.startX) * progress;
-  const y = window.startY + (window.endY - window.startY) * (progress ** 1.4); // чуть медленнее в конце
-
-  container.style.transform = `translate(${x}px, ${h - y}px)`;
-
-  // Добавляем следы
-  if (progress > 0.01 && footprints.length < 140) {
-    const last = footprints[footprints.length - 1] || {x:0, y:0, t:0};
-    const dist = Math.hypot(x - last.x, y - last.y);
-    if (dist > 45 || footprints.length === 0) {
-      const angle = Math.atan2(y - last.y, x - last.x) + Math.PI/2;
-      footprints.push({x, y, angle, t: elapsed});
-    }
-  }
-
-  // Рисуем следы с лёгким затуханием
-  ctx.clearRect(0,0,w,h);
-  footprints.forEach(fp => {
-    const age = elapsed - fp.t;
-    ctx.globalAlpha = Math.max(0.2, 1 - age * 0.008);
-    drawFootprint(fp.x, fp.y, fp.angle);
-  });
-  ctx.globalAlpha = 1;
-
-  if (progress < 1) requestAnimationFrame(animatePenguin);
-  else penguin.classList.remove('walking');
-}
-
-// Запуск
-penguin.classList.add('walking');
-requestAnimationFrame(animatePenguin);
-
-// ────────────────────────────────────────────────
-//  Parallax от мыши
-// ────────────────────────────────────────────────
-scene.addEventListener('mousemove', e => {
-  const mx = (e.clientX / w - 0.5) * 40;
-  const my = (e.clientY / h - 0.5) * 30;
-
-  document.getElementById('bg-mid').style.transform = 
-    `translate(${mx * -0.8}px, ${my * -0.6}px) translateZ(-200px) scale(1.25)`;
-});
-
-// ────────────────────────────────────────────────
-//  Снегопад
-// ────────────────────────────────────────────────
-function createSnowflake() {
-  const flake = document.createElement('div');
-  flake.className = 'snowflake';
-  flake.style.left = Math.random() * 100 + 'vw';
-  flake.style.animationDuration = (8 + Math.random() * 12) + 's';
-  flake.style.opacity = 0.4 + Math.random() * 0.6;
-  flake.style.width = flake.style.height = (3 + Math.random() * 5) + 'px';
-  flake.style.setProperty('--drift', (Math.random() - 0.5) * 80 + 'px');
-  document.body.appendChild(flake);
-
-  setTimeout(() => flake.remove(), 20000);
-}
-
-setInterval(createSnowflake, 180);
-for(let i = 0; i < 35; i++) createSnowflake(); // стартовые снежинки
-</script>
+    <script>
+        // JavaScript код ниже
+    </script>
 </body>
 </html>
