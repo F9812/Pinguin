@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пингвин покоряет гору</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="scene">
+        <div class="sky"></div>
+        <div class="mountain"></div>
+        <div class="mountain mountain-far"></div>
+        <div class="snow"></div>
+        
+        <!-- Контейнер для пингвина с теней -->
+        <div class="penguin-container">
+            <div class="penguin-shadow"></div>
+            <img src="penguin.png" alt="Пингвин" class="penguin" id="penguin">
+        </div>
+    </div>
+
+    <!-- Элементы управления (опционально) -->
+    <div class="controls">
+        <button id="startBtn">Вперёд!</button>
+        <button id="stopBtn">Стоп</button>
+        <label for="speed">Скорость:</label>
+        <input type="range" id="speed" min="1" max="10" value="5">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
